@@ -1,6 +1,6 @@
 # Atlantis 9e Macropad
 
-![Atlantis 9e](https://imgur.com/a/Lvm33o6)
+![Atlantis 9e](https://i.imgur.com/hFuZyXU.jpg)
 
 A 18-key macro pad with 9 pushbutton rotary encoders and underglow RGB per key RGB and for the case.
 
