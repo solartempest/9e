@@ -14,168 +14,195 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
-#include QMK_KEYBOARD_H
-#include "PS17.h"
+#include "A9e.h"
+
 #ifdef RGBLIGHT_ENABLE
 	extern rgblight_config_t rgblight_config; // To pull layer status for RGBLIGHT
 #endif
+
 
 bool is_alt_tab_active = false; // Super Alt Tab Code
 uint16_t alt_tab_timer = 0;
 bool is_window_move_active = false; // Move Window Code
 uint16_t move_window_timer = 0;
-bool spam_enter;
-uint16_t spam_timer = false;
-uint16_t spam_interval = 1000; // (1000ms == 1s)
 #ifdef VIA_ENABLE
 	enum custom_keycodes { //Use USER 00 instead of SAFE_RANGE for Via. VIA json must include the custom keycode.
 	  ATABF = USER00, //Alt tab forwards
 	  ATABR, //Alt tab reverse
 	  NMR, //Move window to monitor on right
-	  NML, //Move window to monitor on left
-	  SPAMENTER //Spam enter
+	  NML //Move window to monitor on left
 	};
 #else
 	enum custom_keycodes { //Use USER 00 instead of SAFE_RANGE for Via. VIA json must include the custom keycode.
 	  ATABF = SAFE_RANGE, //Alt tab forwards
 	  ATABR, //Alt tab reverse
 	  NMR, //Move window to monitor on right
-	  NML, //Move window to monitor on left
-	  SPAMENTER //Spam enter
+	  NML //Move window to monitor on left
 	};
 #endif
 
 
-enum combos { //Tap combos
-  kppls_7,
-  kppls_8
-};
-
-const uint16_t PROGMEM kppls7_combo[] = {KC_KP_PLUS, KC_KP_7, COMBO_END};
-const uint16_t PROGMEM kppl8_combo[] = {KC_KP_PLUS, KC_KP_8, COMBO_END};
-
-combo_t key_combos[COMBO_COUNT] = {
-  [kppls_7] = COMBO(kppls7_combo, KC_BSPACE),
-  [kppls_8] = COMBO(kppl8_combo, KC_DELETE)
-};
-
-
-// Tap Dance declarations
-enum {
-    TD_MINUS_NUMLOCK,
-};
-
-// Tap Dance definitions. Not VIA compatible.
-qk_tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for Escape, twice for Caps Lock
-    [TD_MINUS_NUMLOCK] = ACTION_TAP_DANCE_DOUBLE(KC_KP_MINUS, KC_NUMLOCK),
-};
-//TD(TD_MINUS_NUMLOCK) // Add tap dance item to your keymap in place of a keycode (non-VIA only)
-
-
-enum layer_names {
-    _LAYER0,
-    _LAYER1,
-    _LAYER2,
-    _LAYER3,
-    _LAYER4,
-    _LAYER5,
-    _LAYER6,
-    _LAYER7,
-    _LAYER8,
-    _LAYER9
-};
-	  
+//Keymap physical layout as follows:
+// 		E2	Keys Row 1	E4	E5
+// E1		Keys Row 2	  E6
+// 		E3	Keys Row 3
+//			 E8   E9	  E7
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [_LAYER0] = LAYOUT(
-		KC_PGDOWN, KC__MUTE, KC_PGUP,
-		MO(_LAYER1), KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
-        KC_KP_7, KC_KP_8, KC_KP_9, KC_KP_PLUS,
-        KC_KP_4, KC_KP_5, KC_KP_6,
-        KC_KP_1, KC_KP_2, KC_KP_3, KC_KP_ENTER,
-        KC_KP_0,          KC_KP_DOT
-    ),
-    [_LAYER1] = LAYOUT(
-		KC_RIGHT, KC_TRNS, KC_LEFT,
-        KC_TRNS, KC_MEDIA_STOP, KC_SPACE, KC_NUMLOCK,
-        TO(_LAYER4), TG(_LAYER2), TG(_LAYER3), KC_BSPACE,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, RESET,
-        RESET,          KC_TRNS
-    ),
-    [_LAYER2] = LAYOUT(
-		KC_RBRACKET, KC_TRNS, KC_LBRACKET,
-        TO(0), KC_B, KC_T, C(S(KC_N)),
-        KC_J, KC_S, KC_D, C(KC_MINS),
-        C(KC_C), C(KC_V), KC_M,
-        C(KC_N), C(S(KC_Z)), KC_LSHIFT, C(KC_PPLS),
-        KC_SPACE,          KC_LALT
-    ),
-    [_LAYER3] = LAYOUT(
-		ATABF, KC_TRNS, ATABR,
-        TO(0), KC_WWW_REFRESH, KC_HOME, C(KC_T),
-        C(S(KC_TAB)), KC_UP, C(KC_TAB), C(KC_W),
-        KC_LEFT, KC_DOWN, KC_RIGHT,
-        KC_WWW_BACK, KC_SPACE, KC_WWW_FORWARD, KC_ENTER,
-        KC_PGDOWN,          KC_PGUP
-    ),
-    [_LAYER4] = LAYOUT(
-		ATABF, KC_TRNS, ATABR,
-        TO(0), KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_UP, KC_TRNS, KC_TRNS,
-        KC_LEFT, KC_DOWN, KC_RIGHT,
-        C(S(KC_M)), LWIN(KC_F4), KC_TRNS, KC_NUMLOCK,
-        KC_F13,          KC_F14
-    ),
-    [_LAYER5] = LAYOUT(
-		KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS,          KC_TRNS
-    ),
-    [_LAYER6] = LAYOUT(
-		KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS,          KC_TRNS
-    ),
-    [_LAYER7] = LAYOUT(
-		KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS,          KC_TRNS
-    ),
-    [_LAYER8] = LAYOUT(
-		KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS,          KC_TRNS
-    ),
-    [_LAYER9] = LAYOUT(
-		KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS,          KC_TRNS
-    )
+	KEYMAP(
+		KC_LEFT, KC__MUTE, KC_RIGHT,							//Rotary Encoder 1
+		TO(1), TO(2), TO(3), KC_P7, KC_P8, KC_P9,				//Keys Row 1
+		RGB_VAD, KC_SPACE, RGB_VAI, 							//Rotary Encoder 4
+		RGB_MODE_REVERSE, RGB_TOG, RGB_MODE_FORWARD,			//Rotary Encoder 2
+		KC_CAPS, KC_SLCK, KC_NLCK, KC_P4, KC_P5, KC_P6,			//Keys Row 2
+		RGB_HUD, A(KC_F4), RGB_HUI, 							//Rotary Encoder 5
+		ATABR, KC_MSTP, ATABF,									//Rotary Encoder 3
+		KC_WREF, KC_MYCM, KC_P0, KC_P1, KC_P2, KC_P3,			//Keys Row 3
+		KC_MS_WH_UP, C(KC_W), KC_MS_WH_DOWN, 					//Rotary Encoder 6
+		C(S(KC_TAB)), KC_HOME, C(KC_TAB),						//Rotary Encoder 8
+		C(KC_PMNS), KC__MUTE, C(KC_PPLS),						//Rotary Encoder 9
+		C(S(KC_TAB)), C(KC_T), C(KC_TAB)						//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		TO(0), KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,		//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		TO(0), KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,		//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		TO(0), KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,		//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
+	KEYMAP(
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 1
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 1
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 4
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 2
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 2
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 5
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 3
+		KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,	//Keys Row 3
+		KC_TRNS, KC_TRNS, KC_TRNS, 								//Rotary Encoder 6
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 8
+		KC_TRNS, KC_TRNS, KC_TRNS,								//Rotary Encoder 9
+		KC_TRNS, KC_TRNS, KC_TRNS								//Rotary Encoder 7
+	),
 };
 
 
-void matrix_init_user(void) { //run when matrix is initiated, before all features init
-};
+const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
+	switch (id) {
+	}
+	return MACRO_NONE;
+}
 
-void matrix_scan_user(void) { //run whenever user matrix is scanned
+void matrix_init_user(void) {
+}
+
+void matrix_scan_user(void) {
   if (is_alt_tab_active) {
     if (timer_elapsed(alt_tab_timer) > 1000) {
       unregister_code(KC_LALT);
@@ -189,19 +216,7 @@ void matrix_scan_user(void) { //run whenever user matrix is scanned
       is_window_move_active = false;
     }
   }
-  if (is_window_move_active) {
-    if (timer_elapsed(move_window_timer) > 1000) {
-      unregister_code(KC_LSFT);
-      unregister_code(KC_LWIN);
-      is_window_move_active = false;
-    }
-  }
-  if (spam_enter && timer_elapsed(spam_timer) >= spam_interval) {
-     spam_timer = timer_read();
-    tap_code(KC_UP);
-    tap_code(KC_DOWN);
-  }
-};
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	switch (keycode) { //For super alt tab keycodes
@@ -258,138 +273,173 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		unregister_code(KC_LEFT);
 	  }
 	  break;
-	case SPAMENTER: // Toggle's if we hit "ENTER" or "BACKSPACE" to input macros
-		if (record->event.pressed) { 
-		  spam_enter ^= 1; 
-		  spam_timer = timer_read();
-		}
-		return false;
 	}
 	return true;
 }
 
 
-void keyboard_post_init_user(void) {	//run as last task in keyboard init
-  #ifdef RGB_MATRIX_ENABLE
-    //NOTE 1: Layer lighting doesn't work in RGB matrix mode
-	//NOTE 2: VIA lighting tab doesn't work and will crash in RGB matrix mode
-	//NOTE 3: VIA layers doesn't seem to work properly in RGB matrix mode
-	//rgb_matrix_enable_noeeprom(); //turn on RGB matrix based on previous state
-	rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE); //set initial RGB matrix mode	
-	rgb_matrix_sethsv_noeeprom(58, 255, 80); //sets LED to green-yellow
-  #endif
-  #ifdef RGBLIGHT_ENABLE
+void encoder_update_user(uint8_t index, bool clockwise) 
+{
+    if (index == 0) { /* 1 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 0}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 0}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 2}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 2}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 1) { /* 2 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 0}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 0}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 2}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 2}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 2) { /* 3 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 0}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 0}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 2}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 2}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 3) { /* 4 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 9}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 9}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 11}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 0, .col = 11}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 4) { /* 5 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col =9}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col =9}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 11}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 1, .col = 11}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 5) { /* 6 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 9}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 9}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 11}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 2, .col = 11}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 6) { /* 7 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 9}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 9}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 11}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 11}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 7) { /* 8 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 3}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 3}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 5}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 5}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+    else if (index == 8) { /* 9 encoder */
+        if (clockwise) {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 6}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});  
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 6}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	} 
+        	else {
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 8}, .pressed = true, .time = (timer_read() | 1)  /* time should not be 0 */});
+        	action_exec((keyevent_t){.key = (keypos_t){.row = 3, .col = 8}, .pressed = false, .time = (timer_read() | 1)  /* time should not be 0 */});  
+            }
+    }
+}
+
+
+// RGB Layer Light Settings - Note that this will fix the key switch LED colour and brightness
+const rgblight_segment_t PROGMEM my_layer0_layer[] = RGBLIGHT_LAYER_SEGMENTS({4, 18, 95,255,90}); //Spring green
+const rgblight_segment_t PROGMEM my_layer1_layer[] = RGBLIGHT_LAYER_SEGMENTS({4, 18, 30,255,120}); //Yellow-orange
+const rgblight_segment_t PROGMEM my_layer2_layer[] = RGBLIGHT_LAYER_SEGMENTS({4, 18, 128,255,100}); //Cyan
+const rgblight_segment_t PROGMEM my_layer3_layer[] = RGBLIGHT_LAYER_SEGMENTS({4, 18, 215,255,120}); //Magenta
+const rgblight_segment_t PROGMEM my_capslock_layer[] = RGBLIGHT_LAYER_SEGMENTS({4, 2, 43,100,160}); //White-left caps lock indication (No dedicated LED)
+const rgblight_segment_t PROGMEM my_numlock_layer[] = RGBLIGHT_LAYER_SEGMENTS({8, 2, 43,100,150}); //White-right num lock indication (No dedicated LED)
+const rgblight_segment_t PROGMEM my_scrollock_layer[] = RGBLIGHT_LAYER_SEGMENTS({6, 2, 43,100,160}); //White-middle scroll lock indication (No dedicated LED)
+
+
+const rgblight_segment_t *const PROGMEM my_rgb_layers[] = RGBLIGHT_LAYERS_LIST( //Lighting layers
+    my_layer0_layer,
+    my_layer1_layer,
+    my_layer2_layer,
+    my_layer3_layer,
+	my_capslock_layer,    //Highest status indicators override other layers
+	my_numlock_layer,
+	my_scrollock_layer
+);
+
+
+void keyboard_post_init_user(void)
+{
+    rgblight_layers = my_rgb_layers;// Enable the LED layers
 	rgblight_enable();
-	rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_GRADIENT+8); //Set to static gradient 9. Looks great this way!
-	rgblight_sethsv(58, 255, 50); //Set lower default brightness when connected as the right side dimming is not yet in effect
+	rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_GRADIENT+8); //Set to static gradient 9
+	rgblight_sethsv_noeeprom(50, 255, 50); //Set default brightness when connected
 	layer_move(0); //start on layer 0 to get the lighting activated
-  #endif
-};
+}
 
 
-#ifdef RGBLIGHT_ENABLE
-layer_state_t layer_state_set_user(layer_state_t state) {
-	switch (get_highest_layer(state)) {
-		//This custom layer lighting is similar to RGB Light Gradient 9, but customized to separate key and case underglow brightness
-		static uint16_t underglow_brightness = 140;
-		static uint16_t perkey_brightness = 80;
-		static uint16_t lastrow_brightness = 50; //for less shine-through at case edges (brighter is okay for FR4 plate)
-		static uint16_t current_hue = 0; //hue calculated to be used
-		static uint16_t layer0_huestart = 56; //hue gradient starting colour - green/blue
-		static uint16_t layer0_hueincrement = 2; //hue gradient colour increment
-		static uint16_t layer1_huestart = 15; //hue gradient starting colour - orange/green
-		static uint16_t layer1_hueincrement = 2; //hue gradient colour increment
-		static uint16_t layer2_huestart = 220; //hue gradient starting colour - magenta/orange (this layer is for photoshop)
-		static uint16_t layer2_hueincrement = 2; //hue gradient colour increment
-		static uint16_t layer3_huestart = 135; //hue gradient starting colour - blue/purple
-		static uint16_t layer3_hueincrement = 2; //hue gradient colour increment
-		static uint16_t layer4_huestart = 30; //hue gradient starting colour - orange/red
-		static uint16_t layer4_hueincrement = 1; //hue gradient colour increment
-		
-		/*#define RGBLIGHT_LED_MAP LED_LAYOUT( \
-		1,                 0, \
-		3,                 2, \
-		9,   8, 7,  6,  5, 4, \
-			13, 12, 11, 10,   \
-		18, 17, 16, 15,    14,\
-			22, 21, 20, 19,   \
-		27, 26, 25, 24,    23 )*/
-		
-		case _LAYER0:
-			for (uint8_t i = 0; i < RGBLED_NUM; i++){
-				current_hue=i*layer0_hueincrement+layer0_huestart; //Determine the calculated hue
-				if(current_hue>255){current_hue=current_hue-255;}; //Roll over max hue of 256
-				if (i == 1 || i == 3 || i == 9 || i == 18 || i == 25 || i == 27) {	  
-				  rgblight_sethsv_at(current_hue,255,underglow_brightness,i);
-				} else if (i == 0 || i == 2 || i == 4 || i == 14 || i == 23) { //make right side of the numpad underglow darker
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else if (i == 26 || i == 24 || i == 19 || i ==10) { //make per key end LEDs lighter to reduce glare
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else {
-				  rgblight_sethsv_at(current_hue,255,perkey_brightness,i);
-				};
-			};
+layer_state_t layer_state_set_user(layer_state_t state)
+{
+    rgblight_set_layer_state(0, layer_state_cmp(state, 0));    // Multiple layers will light up if both kb layers are active
+    rgblight_set_layer_state(1, layer_state_cmp(state, 1));
+    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
+    rgblight_set_layer_state(3, layer_state_cmp(state, 3));
+	
+	switch(biton32(state)){ // Change all other LEDs based on layer state as well
+		case 0:
+			rgblight_enable_noeeprom();
+			rgblight_sethsv_noeeprom(50,255,30);
 			break;
-		case _LAYER1:
-			for (uint8_t i = 0; i < RGBLED_NUM; i++){
-				current_hue=i*layer1_hueincrement+layer1_huestart; //Determine the calculated hue
-				if(current_hue>255){current_hue=current_hue-255;}; //Roll over max hue of 256
-				if (i == 1 || i == 3 || i == 9 || i == 18 || i == 25 || i == 27) {	  
-				  rgblight_sethsv_at(current_hue,255,underglow_brightness,i);
-				} else if (i == 0 || i == 2 || i == 4 || i == 14 || i == 23) { //make right side of the numpad underglow darker
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else if (i == 26 || i == 24 || i == 19 || i ==10) { //make per key end LEDs lighter to reduce glare
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else {
-				  rgblight_sethsv_at(current_hue,255,perkey_brightness,i);
-				};
-			};
+		case 1:
+			rgblight_enable_noeeprom();
+			rgblight_sethsv_noeeprom(30,255,30);
 			break;
-		case _LAYER2: //Photoshop custom layer (macros and keys all done in VIA)
-			for (uint8_t i = 0; i < RGBLED_NUM; i++){
-				current_hue=i*layer2_hueincrement+layer2_huestart; //Determine the calculated hue
-				if(current_hue>255){current_hue=current_hue-255;}; //Roll over max hue of 256
-				if (i == 1 || i == 3 || i == 9 || i == 18 || i == 25 || i == 27) {	  
-				  rgblight_sethsv_at(current_hue,255,underglow_brightness,i);
-				} else if (i == 0 || i == 2 || i == 4 || i == 14 || i == 23) { //make right side of the numpad underglow darker
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else if (i == 26 || i == 24 || i == 19 || i ==10) { //make per key end LEDs lighter to reduce glare
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else {
-				  rgblight_sethsv_at(current_hue,255,perkey_brightness,i);
-				};
-			};
+		case 2:
+			rgblight_enable_noeeprom();	
+			rgblight_sethsv_noeeprom(106,255,30);
 			break;
-		case _LAYER3:
-			for (uint8_t i = 0; i < RGBLED_NUM; i++){
-				current_hue=i*layer3_hueincrement+layer3_huestart; //Determine the calculated hue
-				if(current_hue>255){current_hue=current_hue-255;}; //Roll over max hue of 256
-				if (i == 1 || i == 3 || i == 9 || i == 18 || i == 25 || i == 27) {	  
-				  rgblight_sethsv_at(current_hue,255,underglow_brightness,i);
-				} else if (i == 0 || i == 2 || i == 4 || i == 14 || i == 23) { //make right side of the numpad underglow darker
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else if (i == 26 || i == 24 || i == 19 || i ==10) { //make per key end LEDs lighter to reduce glare
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else {
-				  rgblight_sethsv_at(current_hue,255,perkey_brightness,i);
-				};
-			};
+		case 3:
+			rgblight_enable_noeeprom();
+			rgblight_sethsv_noeeprom(215,255,30);
 			break;
-		case _LAYER4:
-			for (uint8_t i = 0; i < RGBLED_NUM; i++){
-				current_hue=i*layer4_hueincrement+layer4_huestart; //Determine the calculated hue
-				if(current_hue>255){current_hue=current_hue-255;}; //Roll over max hue of 256
-				if (i == 1 || i == 3 || i == 9 || i == 18 || i == 25 || i == 27) {	  
-				  rgblight_sethsv_at(current_hue,255,underglow_brightness,i);
-				} else if (i == 0 || i == 2 || i == 4 || i == 14 || i == 23) { //make right side of the numpad underglow darker
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else if (i == 26 || i == 24 || i == 19 || i ==10) { //make per key end LEDs lighter to reduce glare
-				  rgblight_sethsv_at(current_hue,255,lastrow_brightness,i);
-				} else {
-				  rgblight_sethsv_at(current_hue,255,perkey_brightness,i);
-				};
-			};
-		}
-	return state;
-	};
-#endif
+		default:
+			rgblight_enable_noeeprom();
+			rgblight_sethsv_noeeprom(64,255,30);
+	  }
+    return state;
+}
+
+
+bool led_update_user(led_t led_state)
+{
+	rgblight_set_layer_state(4, led_state.caps_lock); //Activate capslock lighting layer
+	rgblight_set_layer_state(5, !(led_state.num_lock)); //Invert the indication so numlock does not always appear "on".
+	rgblight_set_layer_state(6, led_state.scroll_lock); //Activate scrollock lighting layer
+    return true;
+}
