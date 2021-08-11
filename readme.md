@@ -8,10 +8,27 @@ A 18-key macro pad with 9 pushbutton rotary encoders and underglow RGB per key R
 * Hardware Supported: Atlantis 9e
 * Hardware Availability: [rioo897](https://shop198276076.world.taobao.com/index.htm?spm=2013.1.w5002-23418336364.2.3f4d7d51DkVX3s)
 
+# Custom Features:
+
+-   9 remappable rotary encoder controling a variety of different things!
+-   RGB underglow support and remapped to physical locations.
+-   Adds custom layer lighting with custom gradients for each and static colours for the switches.
+-   Adds white caps lock, scroll lock, and num lock key indicators on the top row.
+-   VIA support included by default.
+-   Allows for remapping of per-layer rotary encoder functions in VIA.
+-   Custom macro key in VIA for Super Alt Tab, which is fully compatible with rotary encoders.
+-   Custom macro key in VIA for moving windows to other monitors in Windows, which is fully compatible with rotary encoders.
+
+
+## Flashing
+
 Make example for this keyboard (after setting up your build environment):
 
-    make solartempest/9e:via
+    qmk compile -kb solartempest/9e -km via
 
-To reset the board into bootloader mode, tap the Reset switch mounted on the bottom of the PCB.
+-   Please note that QMK toolbox and configurator cannot be used to flash this board.
+-   You will need to use an ISP Programmer to directly flash the 9e. No board reset is required, as you will flash the MCU directly.
+-   I used Prog ISP V2.0 but other AVR programmers will also work.
+-   Use a 12P AWM 20624 ribbon cable with FCP-12P-1.0mm breakout board. Only 10 pins are used.
 
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
