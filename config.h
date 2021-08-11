@@ -60,15 +60,13 @@
 	#define RGB_DI_PIN E6
 	#ifdef RGB_DI_PIN
 		#define RGBLIGHT_ANIMATIONS
-
 		#define RGBLIGHT_HUE_STEP 8
 		#define RGBLIGHT_SAT_STEP 8
 		#define RGBLIGHT_VAL_STEP 8
 		#define RGBLIGHT_LAYERS
 		#define RGBLIGHT_LAYERS_OVERRIDE_RGB_OFF
-
-		#define RGBLED_NUM 42 // 18 keys + 12 encoders + 12 underglow for RGBLIGHT
 		#define RGBLIGHT_SLEEP
+		#define RGBLED_NUM 42 // 18 keys + 12 encoders + 12 underglow for RGBLIGHT
 		#define RGBLIGHT_LIMIT_VAL 180
 		
 		//RGB LED Conversion macro from physical array to electric array
