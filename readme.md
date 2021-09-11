@@ -1,5 +1,8 @@
 # Atlantis 9e Macropad
 
+### *Update: 9e firmware is now moved!*
+*Find the latest code and files in my main fork:* [qmk_firmware/keyboards/solartempest/9e](https://github.com/solartempest/qmk_firmware/tree/master/keyboards/solartempest/9e)
+
 ![Atlantis 9e](https://i.imgur.com/hFuZyXU.jpg)
 
 A 18-key macro pad with 9 pushbutton rotary encoders and underglow RGB per key RGB and for the case.
